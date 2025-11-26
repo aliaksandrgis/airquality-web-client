@@ -1,0 +1,12 @@
+# Node
+node_modules/
+dist/
+.npmrc
+
+# Env
+.env
+
+# Tools/IDE
+.idea/
+.vscode/
+*.code-workspace
