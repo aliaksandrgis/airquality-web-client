@@ -699,7 +699,9 @@
             tsChart.options = options;
             tsChart.update();
           } else {
-            tsChart = new Chart(tsCanvas.getContext("2d"), {
+            tsChart = new Chart(
+              tsCanvas.getContext("2d", { willReadFrequently: true }),
+              {
               type: "line",
               data,
               options,
