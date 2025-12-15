@@ -1,21 +1,26 @@
 # AirQuality Web Client
 
-Static web client (Cloudflare Pages) that consumes the Geo API.
+Single-page HTML/JS app (OpenLayers + Chart.js). It loads `/api/*` endpoints, so the hosting layer must proxy `/api` to the Geo API domain.
 
-## Quick start
-```bash
-npm install
-cp .env.example .env  # set API base URL
-npm run build
-npm run preview
-```
+## Local preview
 
-## Environment (.env)
-- `VITE_API_BASE_URL` — e.g., `https://api.air.naviodev.com`.
+1. Clone the repo.
+2. Serve `index.html` via any static server, for example `python -m http.server 8081`.
+3. Configure a proxy `/api` → `http://localhost:8000` (running Geo API).
 
 ## Deployment
-- Configure Cloudflare Pages with the same build commands and env vars.
-- No secrets on the client; only public API URLs.
 
-## CI (template)
-- `npm ci`, `npm run lint` (if configured), `npm run build`.
+- **Cloudflare Pages / static hosting**: upload `index.html` (and assets) and add a rule proxying `/api/*` to `https://api.naviodev.com/*`.
+- **Docker**: use the provided `Dockerfile` + `nginx.conf` to serve the app and proxy `/api`.
+
+## Files
+
+- `index.html` — main UI.
+- `nginx.conf` — nginx config (static + `/api` proxy).
+- `Dockerfile` — container image based on nginx.
+
+## Domain setup (`air.naviodev.com`)
+
+1. Host the static files (Cloudflare Pages or Docker).
+2. Ensure `/api` requests are forwarded to `https://api.naviodev.com`.
+3. Update Geo API CORS (`ALLOWED_ORIGINS=https://air.naviodev.com`).
