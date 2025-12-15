@@ -249,6 +249,9 @@
     <script src="https://cdn.jsdelivr.net/npm/ol@v10.7.0/dist/ol.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
+      const API_BASE =
+        window.API_BASE_URL || "https://air-api.naviodev.com";
+
       const statusEl = document.getElementById("status");
       const countryEl = document.getElementById("country");
       const pollutantEl = document.getElementById("pollutant");
@@ -469,7 +472,9 @@
         const pollutant = pollutantEl.value;
         if (country) params.append("country", country);
         if (pollutant) params.append("pollutant", pollutant);
-        const resp = await fetch(`/api/stations_wkt?${params.toString()}`);
+        const resp = await fetch(
+          `${API_BASE}/stations_wkt?${params.toString()}`
+        );
         if (!resp.ok) throw new Error("API error");
         return resp.json();
       }
@@ -580,7 +585,9 @@
           pollutant,
           hours: String(hours),
         });
-        const resp = await fetch(`/api/measurements/timeseries?${params.toString()}`);
+        const resp = await fetch(
+          `${API_BASE}/measurements/timeseries?${params.toString()}`
+        );
         if (!resp.ok) {
           throw new Error(`Timeseries API error: ${resp.status}`);
         }
