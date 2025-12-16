@@ -311,7 +311,8 @@
         if (!value) return "";
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return value;
-        return date.toISOString().replace("T", " ").replace("Z", " UTC");
+        const iso = date.toISOString(); // YYYY-MM-DDTHH:mm:ss.sssZ
+        return `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
       };
 
       function pickPrimaryMeasurement(measurements) {
