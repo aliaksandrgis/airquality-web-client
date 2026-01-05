@@ -15,6 +15,11 @@
         background: radial-gradient(circle at top, #0b1220 0, #020617 55%);
         color: #e5e7eb;
       }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
       h1 {
         margin-bottom: 0.25rem;
         font-size: 1.75rem;
@@ -209,6 +214,72 @@
         }
         #ts-chart {
           height: 220px;
+        }
+      }
+      @media (max-width: 720px) {
+        body {
+          height: auto;
+          min-height: 100vh;
+          overflow: auto;
+        }
+        h1 {
+          font-size: 1.5rem;
+        }
+        .card {
+          margin: 0;
+          padding: 1rem;
+          width: 100%;
+          border-radius: 0;
+          box-shadow: none;
+        }
+        .card-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+        .controls {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.5rem;
+        }
+        .controls label {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+        .controls select,
+        .controls button {
+          width: 100%;
+        }
+        .map-wrapper {
+          margin-top: 0.75rem;
+        }
+        #map {
+          height: 50vh;
+          min-height: 240px;
+        }
+        .locate-btn {
+          top: 0.5rem;
+          right: 0.5rem;
+          left: auto;
+        }
+        .ts-panel {
+          position: static;
+          transform: none;
+          opacity: 1;
+          pointer-events: auto;
+          width: 100%;
+          max-width: none;
+          max-height: none;
+          margin-top: 0.75rem;
+        }
+        .ts-panel:not(.open) {
+          display: none;
+        }
+        #ts-chart {
+          height: 200px;
         }
       }
     </style>
