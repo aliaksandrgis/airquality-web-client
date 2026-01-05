@@ -200,6 +200,11 @@
         height: 220px;
         display: block;
       }
+      .ts-chart-wrap {
+        width: 100%;
+        max-width: 760px;
+        height: 220px;
+      }
       @media (max-width: 900px) {
         #map {
           height: calc(100vh - 300px);
@@ -282,8 +287,14 @@
         .ts-panel:not(.open) {
           display: none;
         }
+        .ts-chart-wrap {
+          height: 220px;
+          max-width: 100%;
+          overflow: hidden;
+        }
         #ts-chart {
-          height: 200px;
+          width: 100%;
+          height: 100%;
           max-width: 100%;
         }
       }
@@ -335,7 +346,9 @@
             <button id="ts-close" class="ts-panel-close" aria-label="Close">&times;</button>
           </div>
           <p id="ts-status" class="status" style="margin-bottom:0.5rem;">Click a station on the map to load a chart.</p>
-          <canvas id="ts-chart"></canvas>
+          <div class="ts-chart-wrap">
+            <canvas id="ts-chart"></canvas>
+          </div>
         </div>
       </div>
     </div>
