@@ -15,6 +15,9 @@
         background: radial-gradient(circle at top, #0b1220 0, #020617 55%);
         color: #e5e7eb;
       }
+      canvas {
+        max-width: 100%;
+      }
       *,
       *::before,
       *::after {
@@ -220,7 +223,8 @@
         body {
           height: auto;
           min-height: 100vh;
-          overflow: auto;
+          overflow-x: hidden;
+          overflow-y: auto;
         }
         h1 {
           font-size: 1.5rem;
@@ -280,6 +284,7 @@
         }
         #ts-chart {
           height: 200px;
+          max-width: 100%;
         }
       }
     </style>
@@ -353,8 +358,8 @@
       const locateBtn = document.getElementById("locate-me");
 
       const wktFormat = new ol.format.WKT();
-      const stationsSource = new ol.source.Vector();
-      const userLocationSource = new ol.source.Vector();
+      const stationsSource = new ol.source.Vector({ wrapX: false });
+      const userLocationSource = new ol.source.Vector({ wrapX: false });
 
       const POLLUTANT_THRESHOLDS = {
         pm25: [10, 25, 50],
@@ -417,7 +422,10 @@
       const clusterSource = new ol.source.Cluster({
         distance: 40,
         source: stationsSource,
+        wrapX: false,
       });
+
+      const worldExtent = ol.proj.get("EPSG:3857").getExtent();
 
       const clusterLayer = new ol.layer.Vector({
         source: clusterSource,
@@ -477,7 +485,7 @@
         target: "map",
         layers: [
           new ol.layer.Tile({
-            source: new ol.source.OSM(),
+            source: new ol.source.OSM({ wrapX: false }),
           }),
           clusterLayer,
           new ol.layer.Vector({
@@ -499,6 +507,10 @@
         view: new ol.View({
           center: ol.proj.fromLonLat([10, 51]),
           zoom: 5,
+          minZoom: 3,
+          maxZoom: 18,
+          extent: worldExtent,
+          constrainOnlyCenter: true,
         }),
       });
 
