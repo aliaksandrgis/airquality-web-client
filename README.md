@@ -1,8 +1,5 @@
 # AirQuality Web Client
 
-Static web UI for the AirQuality dataset.
+Static web UI for the AirQuality demo.
 
 Demo: https://air.naviodev.com
-
-## Local
-Open index.html directly or serve it with any static web server.
