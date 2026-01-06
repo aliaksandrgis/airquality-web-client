@@ -15,6 +15,14 @@
         background: radial-gradient(circle at top, #0b1220 0, #020617 55%);
         color: #e5e7eb;
       }
+      canvas {
+        max-width: 100%;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
       h1 {
         margin-bottom: 0.25rem;
         font-size: 1.75rem;
@@ -189,8 +197,13 @@
       #ts-chart {
         width: 100%;
         max-width: 760px;
-        height: 220px;
+        height: 360px;
         display: block;
+      }
+      .ts-chart-wrap {
+        width: 100%;
+        max-width: 760px;
+        height: 360px;
       }
       @media (max-width: 900px) {
         #map {
@@ -211,6 +224,80 @@
           height: 220px;
         }
       }
+      @media (max-width: 720px) {
+        body {
+          height: auto;
+          min-height: 100vh;
+          overflow-x: hidden;
+          overflow-y: auto;
+        }
+        h1 {
+          font-size: 1.5rem;
+        }
+        .card {
+          margin: 0;
+          padding: 1rem;
+          width: 100%;
+          border-radius: 0;
+          box-shadow: none;
+        }
+        .card-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+        .controls {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.5rem;
+        }
+        .controls label {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+        .controls select,
+        .controls button {
+          width: 100%;
+        }
+        .map-wrapper {
+          margin-top: 0.75rem;
+        }
+        #map {
+          height: 50vh;
+          min-height: 240px;
+        }
+        .locate-btn {
+          top: 0.5rem;
+          right: 0.5rem;
+          left: auto;
+        }
+        .ts-panel {
+          position: static;
+          transform: none;
+          opacity: 1;
+          pointer-events: auto;
+          width: 100%;
+          max-width: none;
+          max-height: none;
+          margin-top: 0.75rem;
+        }
+        .ts-panel:not(.open) {
+          display: none;
+        }
+        .ts-chart-wrap {
+          height: 330px;
+          max-width: 100%;
+          overflow: hidden;
+        }
+        #ts-chart {
+          width: 100%;
+          height: 100%;
+          max-width: 100%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -228,7 +315,6 @@
         </a>
       </div>
       <p class="status" id="status">Loading data...</p>
-      <p class="utc-note">All timestamps shown in UTC</p>
       <div class="controls">
         <label>Country:
           <select id="country">
@@ -260,8 +346,9 @@
             <button id="ts-close" class="ts-panel-close" aria-label="Close">&times;</button>
           </div>
           <p id="ts-status" class="status" style="margin-bottom:0.5rem;">Click a station on the map to load a chart.</p>
-          <p class="utc-note" style="margin-top:0;">Chart times in UTC</p>
-          <canvas id="ts-chart"></canvas>
+          <div class="ts-chart-wrap">
+            <canvas id="ts-chart"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -284,8 +371,8 @@
       const locateBtn = document.getElementById("locate-me");
 
       const wktFormat = new ol.format.WKT();
-      const stationsSource = new ol.source.Vector();
-      const userLocationSource = new ol.source.Vector();
+      const stationsSource = new ol.source.Vector({ wrapX: false });
+      const userLocationSource = new ol.source.Vector({ wrapX: false });
 
       const POLLUTANT_THRESHOLDS = {
         pm25: [10, 25, 50],
@@ -313,7 +400,8 @@
         if (!value) return "";
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return value;
-        return date.toISOString().replace("T", " ").replace("Z", " UTC");
+        const iso = date.toISOString(); // YYYY-MM-DDTHH:mm:ss.sssZ
+        return `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
       };
 
       function pickPrimaryMeasurement(measurements) {
@@ -347,7 +435,10 @@
       const clusterSource = new ol.source.Cluster({
         distance: 40,
         source: stationsSource,
+        wrapX: false,
       });
+
+      const worldExtent = ol.proj.get("EPSG:3857").getExtent();
 
       const clusterLayer = new ol.layer.Vector({
         source: clusterSource,
@@ -407,7 +498,7 @@
         target: "map",
         layers: [
           new ol.layer.Tile({
-            source: new ol.source.OSM(),
+            source: new ol.source.OSM({ wrapX: false }),
           }),
           clusterLayer,
           new ol.layer.Vector({
@@ -429,6 +520,10 @@
         view: new ol.View({
           center: ol.proj.fromLonLat([10, 51]),
           zoom: 5,
+          minZoom: 3,
+          maxZoom: 18,
+          extent: worldExtent,
+          constrainOnlyCenter: true,
         }),
       });
 
@@ -611,7 +706,7 @@
         if (props.location_name) titleParts.push(String(props.location_name));
         if (props.country) titleParts.push(String(props.country));
         openTimeseriesPanel(
-          titleParts.length ? titleParts.join(" • ") : "Time series"
+          titleParts.length ? titleParts.join(" тАв ") : "Time series"
         );
         loadTimeseries(props.station_id, activePollutant);
       });
@@ -662,7 +757,12 @@
             return;
           }
           const first = results[0].series;
-          const labels = first.map((p) => formatUtc(p.timestamp));
+          const labels = first.map((p) => {
+            const d = new Date(p.timestamp);
+            if (Number.isNaN(d.getTime())) return formatUtc(p.timestamp);
+            const iso = d.toISOString(); // YYYY-MM-DDTHH:mm:ss.sssZ
+            return `${iso.slice(5, 10)} ${iso.slice(11, 16)} UTC`;
+          });
 
           const palette = [
             "#38bdf8",
